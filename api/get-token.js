@@ -31,9 +31,10 @@ module.exports = async function handler(req, res) {
     return res.end(JSON.stringify({ error: "not_logged_in" }));
   }
 
-  const url = `${baseUrl}/mcp?MCP_AUTH_TOKEN=${mcpAuthToken}`;
+  const url = `${baseUrl}/mcp`;
+  // Clients must send Authorization: Bearer <token> (token returned separately for Hub authValue)
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify({ url, expiresAt: session.exp }));
+  res.end(JSON.stringify({ url, authHeader: "Authorization", authValue: `Bearer ${mcpAuthToken}`, expiresAt: session.exp }));
 };
