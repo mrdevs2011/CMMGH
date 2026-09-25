@@ -68,6 +68,7 @@
       });
       const data = await res.json();
       if (res.ok && data.ok) {
+        sessionStorage.removeItem("cmmgh_token_page_used");
         window.location.href = "/token/";
         return;
       }

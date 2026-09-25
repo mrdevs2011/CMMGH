@@ -30,6 +30,7 @@
   .msg { margin-top: 14px; font-size: 13px; color: #a9adb8; }
   .msg.err { color: #ff6b6b; }
   .actions { margin-top: 18px; display: flex; gap: 10px; }
+  .timer { margin-top: 10px; font-size: 12px; color: #58d68d; }
 </style>
 </head>
 <body>
@@ -40,54 +41,94 @@
       <button id="copy">Nusxa</button>
     </div>
     <div class="msg" id="msg"></div>
+    <div class="timer" id="timer"></div>
     <div class="actions">
       <button class="secondary" id="refresh">Yangilash</button>
       <button class="secondary" id="logout">Chiqish</button>
     </div>
   </div>
 <script>
-  const tok = document.getElementById("tok");
-  const msg = document.getElementById("msg");
+  const FLAG = "cmmgh_token_page_used";
+  const AUTO_CLOSE_MS = 30 * 1000;
 
-  async function load() {
-    msg.textContent = ""; msg.className = "msg";
-    tok.value = "Yuklanmoqda...";
-    try {
-      const res = await fetch("/api/get-token", { credentials: "same-origin" });
-      if (res.status === 401) {
-        window.location.href = "/login/";
-        return;
-      }
-      const data = await res.json();
-      if (res.ok && data.url) {
-        tok.value = data.url;
-        const mins = Math.max(0, Math.round((data.expiresAt - Date.now()) / 60000));
-        msg.textContent = `Sessiya ~${mins} daqiqa amal qiladi.`;
-      } else {
-        tok.value = "";
-        msg.textContent = "URL olinmadi.";
-        msg.className = "msg err";
-      }
-    } catch {
-      tok.value = "";
-      msg.textContent = "Server bilan bog'lanib bo'lmadi.";
-      msg.className = "msg err";
-    }
+  // Sahifa qayta yuklansa (browser refresh) — token'ni qayta ko'rsatmay,
+  // darhol login'ga qaytar (sessionStorage faqat shu tab uchun, yangi tab/login'da tozalanadi).
+  if (sessionStorage.getItem(FLAG)) {
+    fetch("/api/logout", { method: "POST" }).finally(() => {
+      window.location.replace("/login/");
+    });
+  } else {
+    sessionStorage.setItem(FLAG, "1");
+    boot();
   }
 
-  document.getElementById("copy").addEventListener("click", async () => {
-    if (!tok.value) return;
-    await navigator.clipboard.writeText(tok.value);
-    msg.textContent = "Nusxalandi.";
-    msg.className = "msg";
-  });
-  document.getElementById("refresh").addEventListener("click", load);
-  document.getElementById("logout").addEventListener("click", async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login/";
-  });
+  function boot() {
+    const tok = document.getElementById("tok");
+    const msg = document.getElementById("msg");
+    const timerEl = document.getElementById("timer");
+    let closeAt = Date.now() + AUTO_CLOSE_MS;
+    let countdownInterval = null;
 
-  load();
+    function startCountdown() {
+      clearInterval(countdownInterval);
+      closeAt = Date.now() + AUTO_CLOSE_MS;
+      countdownInterval = setInterval(() => {
+        const left = Math.max(0, Math.round((closeAt - Date.now()) / 1000));
+        timerEl.textContent = `Sahifa ${left} soniyadan keyin yopiladi.`;
+        if (left <= 0) {
+          clearInterval(countdownInterval);
+          closeSession();
+        }
+      }, 250);
+    }
+
+    async function closeSession() {
+      sessionStorage.removeItem(FLAG);
+      await fetch("/api/logout", { method: "POST" }).catch(() => {});
+      window.location.replace("/login/");
+    }
+
+    async function load() {
+      msg.textContent = ""; msg.className = "msg";
+      tok.value = "Yuklanmoqda...";
+      try {
+        const res = await fetch("/api/get-token", { credentials: "same-origin" });
+        if (res.status === 401) {
+          sessionStorage.removeItem(FLAG);
+          window.location.replace("/login/");
+          return;
+        }
+        const data = await res.json();
+        if (res.ok && data.url) {
+          tok.value = data.url;
+          msg.textContent = "";
+        } else {
+          tok.value = "";
+          msg.textContent = "URL olinmadi.";
+          msg.className = "msg err";
+        }
+      } catch {
+        tok.value = "";
+        msg.textContent = "Server bilan bog'lanib bo'lmadi.";
+        msg.className = "msg err";
+      }
+    }
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      if (!tok.value) return;
+      await navigator.clipboard.writeText(tok.value);
+      msg.textContent = "Nusxalandi.";
+      msg.className = "msg";
+    });
+    document.getElementById("refresh").addEventListener("click", () => {
+      load();
+      startCountdown();
+    });
+    document.getElementById("logout").addEventListener("click", closeSession);
+
+    load();
+    startCountdown();
+  }
 </script>
 </body>
 </html>

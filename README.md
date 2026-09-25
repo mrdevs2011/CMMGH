@@ -30,8 +30,8 @@ Connector URL: `https://<loyiha>.vercel.app/mcp?MCP_AUTH_TOKEN=<MCP_AUTH_TOKEN>`
 1. `https://<loyiha>.vercel.app/` ga kir (avtomatik `/login/` ga o'tadi).
 2. Email + parolni kirit.
 3. `/token/` sahifasida tayyor MCP connector URL ko'rinadi, "Nusxa" tugmasi bilan darhol nusxalab, Claude'ga connector sifatida ulaysan.
-4. Sessiya 30 daqiqa amal qiladi, shundan keyin qayta login kerak bo'ladi (avtomatik `/login/` ga qaytariladi).
-5. "Chiqish" tugmasi sessiyani darhol tugatadi va `/login/` ga qaytaradi.
+4. `/token/` sahifasi **bir martalik ko'rsatish**: 30 soniyadan keyin avtomatik sessiyani tugatib `/login/`ga qaytaradi; sahifani qayta yuklasang (F5/refresh) ham darhol sessiyani tugatib `/login/`ga qaytaradi — token qayta ko'rsatilmaydi.
+5. "Yangilash" tugmasi (sahifani qayta yuklamasdan) URL'ni qayta so'raydi va 30 soniyalik hisobni qayta boshlaydi. "Chiqish" tugmasi sessiyani darhol tugatadi va `/login/`ga qaytaradi.
 
 **Xavfsizlik:**
 - Parol solishtirish `timingSafeEqual` bilan (timing attack'dan himoya).
