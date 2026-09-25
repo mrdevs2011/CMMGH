@@ -1,16 +1,32 @@
 // CMMGH MCP — Streamable HTTP, stateless.
-// SECURITY: GH_TOKEN never leaves the server. Clients upload via upload_file;
-// the server pushes to GitHub Contents API with the server-side token.
-// Env: MCP_AUTH_TOKEN, GH_TOKEN, UPLOAD_REPO (owner/repo), optional UPLOAD_BRANCH
+// GH_TOKEN is a Fine-grained GitHub PAT scoped to ONE private uploads repo only
+// (Contents: Read and write). It does NOT grant account-wide or other-repo access.
+// Tools:
+//   - get_upload_token: returns that PAT for Claude/Skills direct git clone+push
+//     (fast path; client must NEVER echo the token in chat/logs).
+//   - upload_file: server-side Contents API push (token never leaves the server).
+//   - list_repo_root: read-only listing.
+// Env: MCP_AUTH_TOKEN, GH_TOKEN (fine-grained), UPLOAD_REPO (owner/repo), optional UPLOAD_BRANCH
 const crypto = require("crypto");
 
-const SERVER_INFO = { name: "CMMGH", version: "2.0.0" };
+const SERVER_INFO = { name: "CMMGH", version: "2.1.0" };
 const MAX_FILE_BYTES = 20 * 1024 * 1024; // 20 MB
 const RATE = new Map(); // key -> { count, resetAt }
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX = 30;
 
 const TOOLS = [
+  {
+    name: "get_upload_token",
+    description:
+      "Returns the Fine-grained GitHub PAT for the uploads repo ONLY " +
+      "(scoped to one private repo; no account-wide access). " +
+      "Call ONLY when the user explicitly asks to transfer a file via uploads. " +
+      "SECURITY: NEVER print, echo, or restate the token in chat/logs. " +
+      "Use it once in a single bash clone+push command, then discard. " +
+      "Do not use this token for any other repository.",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+  },
   {
     name: "upload_file",
     description:
@@ -218,6 +234,25 @@ async function handleRpc(msg) {
       const name = params && params.name;
       const args = (params && params.arguments) || {};
       try {
+        if (name === "get_upload_token") {
+          const token = process.env.GH_TOKEN;
+          if (!token) {
+            return ok(id, {
+              isError: true,
+              content: [{ type: "text", text: "GH_TOKEN is not set on the server." }],
+            });
+          }
+          const repo = process.env.UPLOAD_REPO || "";
+          // Fine-grained PAT: intentionally returned for Claude/Skills direct push.
+          // Client (AI) must never echo it in chat or logs.
+          const payload = JSON.stringify({
+            token,
+            repo: repo || null,
+            scope: "fine-grained: uploads repo only",
+            _security: "Do not print token. Use once in git URL then discard.",
+          });
+          return ok(id, { content: [{ type: "text", text: payload }] });
+        }
         if (name === "upload_file") {
           const result = await uploadFile(args);
           return ok(id, {

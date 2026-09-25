@@ -2,8 +2,13 @@
 
 Ikki qism:
 
-1. **MCP server** (`/api/mcp`) — Claude uchun. Bitta tool: `get_upload_token`. `GH_TOKEN`ni Claude'ga beradi (Claude undan `uploads` repo'ga push qilish uchun foydalanadi).
+1. **MCP server** (`/api/mcp`) — Claude uchun. Tool'lar:
+   - `get_upload_token` — **Fine-grained GitHub PAT** ni qaytaradi (faqat bitta private `uploads` repo, Contents R/W). Claude/Skills to'g'ridan-to'g'ri `git clone+push` uchun. Token chat/log'ga hech qachon yozilmasin.
+   - `upload_file` — server-side Contents API orqali yuklash (token serverdan chiqmaydi).
+   - `list_repo_root` — faqat o'qish.
 2. **Web login** (`/login/`, `/token/`) — MR o'zi brauzerdan kirib, tayyor MCP connector URL'ini (`.../mcp?MCP_AUTH_TOKEN=...`) ko'rish/nusxalash uchun.
+
+**Nima uchun Fine-grained PAT?** Oddiy classic PAT emas — faqat bitta private omborga cheklangan, akkaunt/boshqa repolarga kirish bermaydi. Claude va Skills fayllarni tezkor upload qilish uchun qulay va xavfsiz.
 
 ## Sahifa tuzilishi
 - `/` — hech narsa ko'rsatmaydi, darhol `/login/` ga yo'naltiradi.
