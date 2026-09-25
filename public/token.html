@@ -55,7 +55,7 @@
     try {
       const res = await fetch("/api/get-token", { credentials: "same-origin" });
       if (res.status === 401) {
-        window.location.href = "/index.html";
+        window.location.href = "/";
         return;
       }
       const data = await res.json();
@@ -84,7 +84,7 @@
   document.getElementById("refresh").addEventListener("click", load);
   document.getElementById("logout").addEventListener("click", async () => {
     await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/index.html";
+    window.location.href = "/";
   });
 
   load();
