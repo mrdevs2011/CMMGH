@@ -1,9 +1,15 @@
-# CMMGH (ConnectMyMCPGithub)
+# CMMGH (ConnectMyMcpGithub)
 
 Ikki qism:
 
 1. **MCP server** (`/api/mcp`) — Claude uchun. Bitta tool: `get_upload_token`. `GH_TOKEN`ni Claude'ga beradi (Claude undan `uploads` repo'ga push qilish uchun foydalanadi).
-2. **Web login** (`/`, `/token.html`) — MR o'zi brauzerdan kirib, tayyor MCP connector URL'ini (`.../mcp?MCP_AUTH_TOKEN=...`) ko'rish/nusxalash uchun.
+2. **Web login** (`/login/`, `/token/`) — MR o'zi brauzerdan kirib, tayyor MCP connector URL'ini (`.../mcp?MCP_AUTH_TOKEN=...`) ko'rish/nusxalash uchun.
+
+## Sahifa tuzilishi
+- `/` — hech narsa ko'rsatmaydi, darhol `/login/` ga yo'naltiradi.
+- `/login/` — email+parol bilan kirish sahifasi.
+- `/token/` — login qilingandan keyin tayyor MCP connector URL ko'rinadigan sahifa.
+- `/index.html`, `/login/index.html`, `/token/index.html` ga to'g'ridan-to'g'ri kirilsa ham, 301 bilan tozaroq (`/`, `/login/`, `/token/`) shakliga yo'naltiriladi.
 
 ## Deploy
 1. Bu papkani GitHub repo'ga push qil (yoki `vercel` CLI bilan deploy qil).
@@ -20,11 +26,11 @@ Ikki qism:
 Connector URL: `https://<loyiha>.vercel.app/mcp?MCP_AUTH_TOKEN=<MCP_AUTH_TOKEN>`
 
 ## Web login (MR uchun)
-1. `https://<loyiha>.vercel.app/` ga kir.
+1. `https://<loyiha>.vercel.app/` ga kir (avtomatik `/login/` ga o'tadi).
 2. Email + parolni kirit.
-3. `/token.html`da tayyor MCP connector URL ko'rinadi, "Nusxa" tugmasi bilan darhol nusxalab, Claude'ga connector sifatida ulaysan.
-4. Sessiya 30 daqiqa amal qiladi, shundan keyin qayta login kerak bo'ladi.
-5. "Chiqish" tugmasi sessiyani darhol tugatadi.
+3. `/token/` sahifasida tayyor MCP connector URL ko'rinadi, "Nusxa" tugmasi bilan darhol nusxalab, Claude'ga connector sifatida ulaysan.
+4. Sessiya 30 daqiqa amal qiladi, shundan keyin qayta login kerak bo'ladi (avtomatik `/login/` ga qaytariladi).
+5. "Chiqish" tugmasi sessiyani darhol tugatadi va `/login/` ga qaytaradi.
 
 **Xavfsizlik:**
 - Parol solishtirish `timingSafeEqual` bilan (timing attack'dan himoya).
