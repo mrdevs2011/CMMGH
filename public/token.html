@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CMMGH — Token</title>
+<title>CMMGH — MCP URL</title>
 <style>
   :root { color-scheme: dark light; }
   body {
@@ -34,7 +34,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>GitHub token</h1>
+    <h1>MCP ulanish manzili</h1>
     <div class="row">
       <input id="tok" type="text" readonly value="Yuklanmoqda..." />
       <button id="copy">Nusxa</button>
@@ -59,13 +59,13 @@
         return;
       }
       const data = await res.json();
-      if (res.ok && data.token) {
-        tok.value = data.token;
+      if (res.ok && data.url) {
+        tok.value = data.url;
         const mins = Math.max(0, Math.round((data.expiresAt - Date.now()) / 60000));
         msg.textContent = `Sessiya ~${mins} daqiqa amal qiladi.`;
       } else {
         tok.value = "";
-        msg.textContent = "Token olinmadi.";
+        msg.textContent = "URL olinmadi.";
         msg.className = "msg err";
       }
     } catch {
