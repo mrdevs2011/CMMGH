@@ -20,6 +20,7 @@ Ikki qism:
    - `LOGIN_EMAIL` = web login uchun email.
    - `LOGIN_PASS` = web login uchun parol.
    - `SESSION_SECRET` = uzun tasodifiy satr (`openssl rand -hex 32`) — sessiya cookie imzosi uchun.
+   - `PUBLIC_BASE_URL` = loyihaning aniq domeni, masalan `https://cmmgh.vercel.app` (oxirida `/` bo'lmasin) — MCP URL shundan yasaladi, so'rov header'idan (Host) OLINMAYDI (spoofing'dan himoya).
 3. Redeploy.
 
 ## Claude'ga ulash (MCP)
@@ -38,6 +39,7 @@ Connector URL: `https://<loyiha>.vercel.app/mcp?MCP_AUTH_TOKEN=<MCP_AUTH_TOKEN>`
 - Sessiya cookie: `HttpOnly` + `Secure` (production) + `SameSite=Strict` — JS orqali o'g'irlab bo'lmaydi, boshqa saytdan yuborilmaydi.
 - Sessiya statik emas — HMAC (`SESSION_SECRET`) bilan imzolangan, muddati tugagach avtomatik ishlamay qoladi.
 - `/api/get-token` `GH_TOKEN`ni emas, faqat tayyor MCP connector URL'ini qaytaradi — parolli login orqali `GH_TOKEN` umuman brauzerga chiqmaydi.
+- MCP URL'dagi domen `PUBLIC_BASE_URL` env'dan olinadi, `Host`/`X-Forwarded-Host` header'iga ishonilmaydi (host-header spoofing'dan himoya).
 
 ## Tekshirish (MCP)
 curl -s -X POST "https://<loyiha>.vercel.app/mcp?MCP_AUTH_TOKEN=..." -H "content-type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'

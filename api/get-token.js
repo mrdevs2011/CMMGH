@@ -1,5 +1,8 @@
 // GET -> requires valid cmmgh_session cookie (set by /api/login) -> returns the MCP connector URL.
-// Env required: SESSION_SECRET, MCP_AUTH_TOKEN
+// Env required: SESSION_SECRET, MCP_AUTH_TOKEN, PUBLIC_BASE_URL
+// PUBLIC_BASE_URL example: https://cmmgh.vercel.app (no trailing slash)
+// NOTE: the domain is NEVER derived from request headers (Host/X-Forwarded-Host
+// are client-controlled and must not be trusted for building URLs).
 const { verify, parseCookies } = require("../lib/session");
 
 module.exports = async function handler(req, res) {
@@ -13,7 +16,8 @@ module.exports = async function handler(req, res) {
 
   const secret = process.env.SESSION_SECRET;
   const mcpAuthToken = process.env.MCP_AUTH_TOKEN;
-  if (!secret || !mcpAuthToken) {
+  const baseUrl = (process.env.PUBLIC_BASE_URL || "").replace(/\/+$/, "");
+  if (!secret || !mcpAuthToken || !baseUrl) {
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
     return res.end(JSON.stringify({ error: "server_not_configured" }));
@@ -27,9 +31,7 @@ module.exports = async function handler(req, res) {
     return res.end(JSON.stringify({ error: "not_logged_in" }));
   }
 
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0];
-  const url = `${proto}://${host}/mcp?MCP_AUTH_TOKEN=${mcpAuthToken}`;
+  const url = `${baseUrl}/mcp?MCP_AUTH_TOKEN=${mcpAuthToken}`;
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/json");
