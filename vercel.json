@@ -1,6 +1,8 @@
 {
   "rewrites": [{ "source": "/mcp", "destination": "/api/mcp" }],
   "redirects": [
-    { "source": "/index.html", "destination": "/", "permanent": true }
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/login/index.html", "destination": "/login/", "permanent": true },
+    { "source": "/token/index.html", "destination": "/token/", "permanent": true }
   ]
 }
