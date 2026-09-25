@@ -8,9 +8,11 @@ const TOOLS = [
   {
     name: "get_upload_token",
     description:
-      "Returns the GitHub token used to push files (zip) to the uploads repo. " +
-      "Call only when the user asks to push/upload a file. " +
-      "Then use bash: git clone https://x-access-token:TOKEN@github.com/OWNER/REPO.git, copy the file, commit, push.",
+      "Returns a short-lived-use GitHub token for the uploads repo ONLY. " +
+      "Call ONLY when the user explicitly asks to transfer a file via uploads. " +
+      "SECURITY: NEVER print, echo, or restate the token in chat/logs. " +
+      "Use it once in a single bash clone+push command, then discard. " +
+      "Do not use this token for any other repository.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
 ];
@@ -63,7 +65,12 @@ function handleRpc(msg) {
         return ok(id, { isError: true, content: [{ type: "text", text: "GH_TOKEN is not set on the server." }] });
       }
       const repo = process.env.UPLOAD_REPO || "";
-      const text = JSON.stringify({ token, repo: repo || null }, null, 2);
+      // Token is intentional capability of this tool; client (AI) must not echo it.
+      const text = JSON.stringify({
+        token,
+        repo: repo || null,
+        _security: "Do not print token. Use once in git URL then discard.",
+      });
       return ok(id, { content: [{ type: "text", text }] });
     }
     default:
